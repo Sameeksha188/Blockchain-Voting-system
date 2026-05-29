@@ -38,10 +38,12 @@ class Block{
 };
 class Blockchain{
     public:
+    long voting_deadline;
     vector<Block>chain;
     vector<string>registered_voters = {"VOTER101","VOTER102","VOTER103"};
     vector<string>candidates = {"Alice","Bob","Charlie"};
     Blockchain(){
+        voting_deadline = time(0)+300;
         create_genesis_block();
     }
     void create_genesis_block(){
@@ -64,17 +66,28 @@ class Blockchain{
         }
         return false;
     }
-    void add_vote(string voter_id,string candidate){
+    bool validate_vote(string voter_id,string candidate){
         if (check(registered_voters,voter_id)==false){
-            cout<<"Voter ID not registered"<<endl;
-            return;
+            cout<<"[ERROR] Voter ID not registered"<<endl;
+            return false;
         }
         if (check(candidates,candidate)==false){
-            cout<<"candidate doesn't exist"<<endl;
-            return;
+            cout<<"[ERROR] candidate does not exist"<<endl;
+            return false;
         }
         if (has_Voted(voter_id)==true){
-            cout<<"Voter has already voted"<<endl;
+            cout<<"[ERROR] Voter has already voted"<<endl;
+            return false;
+        }
+        long currentTime = (long)time(0);
+        if (currentTime > voting_deadline) {
+            cout << "Rejected: Voting period has ended! (Deadline reached)" << endl;
+            return false;
+        }
+        return true;
+    }
+    void add_vote(string voter_id,string candidate){
+        if (validate_vote(voter_id,candidate)==false){
             return;
         }
         string previous_hash = chain.back().current_hash;
@@ -85,15 +98,17 @@ class Blockchain{
     bool is_valid(){
         for (int i =1;i<chain.size();i++){
             if (chain[i].previous_hash != chain[i-1].current_hash){
+                cout<<"[ALERT]TAMPERING DETECTED"<<endl;
                 cout<<"previous hash mismatched"<<endl;
                 return false;
             }
             if (chain[i].current_hash != chain[i].makehash()){
+                cout<<"[ALERT] TAMPERING DETECTED"<<endl;
                 cout<<"Hash doesn't match"<<endl;
                 return false;
             }
-            
         }
+        cout<<"It is a valid chain"<<endl;
         return true;
     }
     void count_votes(){
@@ -150,14 +165,17 @@ int main(){
     Blockchain myvote;
     myvote.add_vote("VOTER101","Alice");
     myvote.add_vote("VOTER102","Charlie");
-    myvote.add_vote("VOTER103","Alice");
-    cout<<"Before tampering"<<endl;
+    myvote.add_vote("VOTER101","Alice");
+    myvote.add_vote("VOTER111","bob");
+    myvote.add_vote("VOTER103","Lexi");
+    cout<<"---Before tampering---"<<endl;
     myvote.count_votes();
     myvote.display_chain();
     myvote.declare_winner();
     myvote.chain[1].candidate = "Bob";
-    cout<<"After tampering"<<endl;
-    myvote.count_votes();
-    myvote.is_valid(); 
+    cout<<"---After tampering---"<<endl;
+    myvote.is_valid();
+   
+     
     return 0;
 }
