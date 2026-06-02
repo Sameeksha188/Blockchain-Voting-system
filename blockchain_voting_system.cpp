@@ -161,6 +161,10 @@ class Blockchain{
             winner_votes = count_votes[c];
         }
     }
+    if (winner_votes == 0) {
+    cout << "No votes cast." << endl;
+    return;
+   }
 
     // Find all candidates with maximum votes
     vector<string> winners;
