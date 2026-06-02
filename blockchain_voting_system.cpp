@@ -1,5 +1,5 @@
 #include<iostream>
-#include <String>
+#include <string>
 #include<ctime>
 #include<map>
 #include<vector>
@@ -142,24 +142,46 @@ class Blockchain{
         cout<<"=========== End of the chain==========="<<endl;
 
     }
-    void declare_winner(){
-        int winner_votes =0;
-        string winner;
-        map<string,int>count_votes;
-        for (string c : candidates){
-            count_votes[c]=0;
-        }
-        for (int i=1;i<chain.size();i++){
-            count_votes[chain[i].candidate]++;
-        }
-        for (string c : candidates){
-            if (count_votes[c]>winner_votes){
-                winner_votes = count_votes[c];
-                winner = c;
-            }
-        }
-        cout<<"WINNER : "<<winner<<endl;
+    void declare_winner() {
+    map<string,int> count_votes;
+
+    for (string c : candidates) {
+        count_votes[c] = 0;
     }
+
+    for (int i = 1; i < chain.size(); i++) {
+        count_votes[chain[i].candidate]++;
+    }
+
+    int winner_votes = 0;
+
+    // Find maximum votes
+    for (string c : candidates) {
+        if (count_votes[c] > winner_votes) {
+            winner_votes = count_votes[c];
+        }
+    }
+
+    // Find all candidates with maximum votes
+    vector<string> winners;
+
+    for (string c : candidates) {
+        if (count_votes[c] == winner_votes) {
+            winners.push_back(c);
+        }
+    }
+
+    if (winners.size() == 1) {
+        cout << "WINNER : " << winners[0] << endl;
+    }
+    else {
+        cout << "ELECTION TIED BETWEEN: ";
+        for (string c : winners) {
+            cout << c << " ";
+        }
+        cout << endl;
+    }
+}
 };
 int main(){
     Blockchain myvote;
